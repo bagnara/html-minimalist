@@ -1,0 +1,52 @@
+name: GitHub Pages Deploy
+
+
+on:
+  push:
+    branches: [ master ]
+    paths-ignore:
+      - "*.md"
+
+  workflow_dispatch:
+
+
+jobs:  
+  build:
+    name: Build and upload artifact
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Install
+        run: npm install
+
+      - name: Build
+        run: npm run build
+
+      - name: Setup
+        uses: actions/configure-pages@v2
+
+      - name: Upload
+        uses: actions/upload-pages-artifact@v1
+        with:
+          path: './build'
+
+  deploy:
+    name: Deploy artifact to gh-pages
+    runs-on: ubuntu-latest
+    needs: build
+
+    permissions:
+      pages: write
+      id-token: write
+
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v1
